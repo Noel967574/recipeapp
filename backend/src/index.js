@@ -9,6 +9,7 @@ import otpRoutes from "./routes/otp.js";
 import path from "path";
 import { fileURLToPath } from "url";
 import cors from "cors";
+import fs from "fs";
 
 import {apiLimiter} from "./middleware/rateLimiter.js";
 import logger from "./utils/logger.js";
@@ -50,6 +51,13 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
+//configure uploads via env variable(for the use of Render disk mount path feature when in production)
+const UPLOADS_DIR = process.env.UPLOADS_DIR || path.join(__dirname, "uploads");
+if (!fs.existsSync(UPLOADS_DIR)) {
+  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+}
+app.use("/uploads", express.static(UPLOADS_DIR));
+
 //define routes
 app.use("/api/user", userRoutes);
 app.use("/api/recipe", recipeRoutes);
@@ -57,6 +65,26 @@ app.use("/api/recipe", recipeRoutes);
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api", otpRoutes);
 
+// directory for client build files
+const clientBuildPath = path.join(__dirname, "..", "..", "frontend", "build"); // React
+const clientDistPath = path.join(__dirname, "..", "..", "frontend", "dist"); // Vite
+
+// conditionally serve client build files if in production
+if (process.env.ENV === "production") {
+  if (fs.existsSync(clientBuildPath)) {
+    app.use(express.static(clientBuildPath));
+    app.get("*", (req, res) => {
+      res.sendFile(path.join(clientBuildPath, "index.html"));
+    });
+  } else if (fs.existsSync(clientDistPath)) {
+    app.use(express.static(clientDistPath));
+    app.get("*", (req, res) => {
+      res.sendFile(path.join(clientDistPath, "index.html"));
+    });
+  } else {
+    console.log("Client build files not found");
+  }
+}
 
 
 // call your app to listen to a PORT
