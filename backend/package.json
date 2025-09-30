@@ -4,10 +4,11 @@
   "description": "This is server for powering web app for recommending recipe's to users and giving them tutorials on cooking",
   "main": "index.js",
   "type": "module",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+ "scripts": {
     "start": "node src/index.js",
-    "dev": "nodemon src/index.js"
+    "dev": "nodemon src/index.js",
+    "build:frontend": "npm install --prefix ../frontend && npm run build --prefix ../frontend",
+    "postinstall": "npm run build:frontend"
   },
   "keywords": [
     "recipe",
