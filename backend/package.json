@@ -7,9 +7,9 @@
  "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
-    "build:frontend": "npm install --prefix ../frontend && npm run build --prefix ../frontend",
-    "postinstall": "npm run build:frontend"
+    "build:frontend": "cd ../frontend && npm install && npm run build"
   },
+  
   "keywords": [
     "recipe",
     "food",
